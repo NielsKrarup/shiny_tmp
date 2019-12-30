@@ -1,8 +1,9 @@
 #test
 library(shiny)
+library(highcharter)
 
 plot_fun_helper <- function(x,y){
-  df = data.frame(x=round(x,3),y=round(y,3))
+  df = data.frame(x=round(x[sample(seq_along(x))],3),y=round(y,3))
   highcharter::hchart(df, type = "area", hcaes(x=x,y=y), color = "#009FDA", name = "Density")
 }
 
@@ -43,6 +44,7 @@ ui <-
         selectizeInput("cur_tab", "distribution",c("Normal","LogNormal","Exponential")),
         uiOutput("sidebar")
       ),
+      #main panel 
       uiOutput("plot")
     )
   )
