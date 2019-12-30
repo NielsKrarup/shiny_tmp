@@ -10,7 +10,6 @@ xy_dens_gen <- function(tab, input){
   if(tab == "Normal"){
     #if normal, plot around mean, pm 3 std
     req(input$normal_mean)
-    
     x <- seq(from = input$normal_mean - 3*input$normal_std, 
              to = input$normal_mean + 3*input$normal_std,
              length.out = 1e3)
@@ -19,7 +18,6 @@ xy_dens_gen <- function(tab, input){
   else if(tab == "LogNormal"){
     #if LogNormal, plot from 0 to 3*CV
     req(input$lognormal_CV)
-    print(tab)
     x <- seq(from = 0, 
              to = 3*input$lognormal_CV,
              length.out = 1e3)
