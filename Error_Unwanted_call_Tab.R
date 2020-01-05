@@ -1,6 +1,7 @@
 #test
 library(shiny)
 
+#Helper plot function, only needed on plots in tabs: Special and Cool
 plot_fun_helper <- function(x, y, tab){
     switch(tab,
            "Special" = {
@@ -13,15 +14,13 @@ plot_fun_helper <- function(x, y, tab){
     
 }
 
-#function that returns the x- and y vektors for plotting, not important.
+#function that returns the x- and y vektors for plotting, depending on the current tab.
 xy_dens_gen <- function(tab, input){
     if(tab == "Normal"){
-        #if normal, plot around mean, pm 3 std
         x <- 1:100
         y <- x^2
     }
     else if(tab == "Special"){
-        #if LogNormal, plot from 0 to 3*CV
         x <- 1:100
         y <- sin(x)
     }
@@ -50,7 +49,7 @@ ui <-
                    )
         ),
         
-        # exponential Tab 
+        # Cool Tab 
         tabPanel('Cool',       
                          plotOutput("plot_Cool")
         )
@@ -58,7 +57,7 @@ ui <-
     )
 
 
-# Define server logic required to draw pdf
+# Server Logic
 server <- function(input, output) {
     
     rvals <- reactiveValues()
@@ -73,6 +72,7 @@ server <- function(input, output) {
     
     #Render print inside renderPLot
     output$plot_Normal <- renderPlot({
+        
         #NB does not invoke the plot helper
         plot(rvals$x, rvals$y)
     })
