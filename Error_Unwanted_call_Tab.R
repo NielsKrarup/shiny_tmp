@@ -3,6 +3,7 @@ library(shiny)
 
 #Helper plot function, only needed on plots in tabs: Special and Cool
 plot_fun_helper <- function(x, y, tab){
+    req(tab)
     switch(tab,
            "Special" = {
                plot(x,y, type = 'l', col = 'green')  
@@ -15,7 +16,8 @@ plot_fun_helper <- function(x, y, tab){
 }
 
 #function that returns the x- and y vektors for plotting, depending on the current tab.
-xy_dens_gen <- function(tab, input){
+xy_dens_gen <- function(tab){
+    req(tab)
     if(tab == "Normal"){
         x <- 1:100
         y <- x^2
@@ -63,7 +65,7 @@ server <- function(input, output) {
     rvals <- reactiveValues()
     
     observe({
-        xy_list <- xy_dens_gen(tab = input$cur_tab, input = input)
+        xy_list <- xy_dens_gen(tab = input$cur_tab)
         rvals$x <- xy_list$x
         rvals$y <- xy_list$y
     })
@@ -73,7 +75,7 @@ server <- function(input, output) {
     #Render print inside renderPLot
     output$plot_Normal <- renderPlot({
         
-        #NB does not invoke the plot helper
+        #NB does not invoke the plot_fun_helper
         plot(rvals$x, rvals$y)
     })
     
