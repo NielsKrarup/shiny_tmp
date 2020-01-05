@@ -1,0 +1,94 @@
+#test
+library(shiny)
+
+plot_fun_helper <- function(x, y, tab){
+    switch(tab,
+           "Special" = {
+               plot(x,y, type = 'l', col = 'green')  
+           },
+           "Cool" = {
+               plot(x,y, type = 'b', pch = y, col = y ) 
+           },
+           stop("Error. Only defined for Tab: Special and Cool"))
+    
+}
+
+#function that returns the x- and y vektors for plotting, not important.
+xy_dens_gen <- function(tab, input){
+    if(tab == "Normal"){
+        #if normal, plot around mean, pm 3 std
+        x <- 1:100
+        y <- x^2
+    }
+    else if(tab == "Special"){
+        #if LogNormal, plot from 0 to 3*CV
+        x <- 1:100
+        y <- sin(x)
+    }
+    else if(tab =="Cool"){
+        x <- 1:100
+        y <- x %% 5
+    }
+    else stop("No method found")
+    
+    return(list(x = x,
+                y = y))
+}
+
+
+# Define UI for application that draws the pdf
+ui <- 
+    navbarPage(
+        title = 'reprex', id = "cur_tab", selected = 'Normal',
+        # Normal Tab ----
+        navbarMenu("Normal/Special",
+                   tabPanel("Normal",
+                                    plotOutput("plot_Normal")
+                            ),
+                   tabPanel("Special",
+                                    plotOutput("plot_Special")
+                   )
+        ),
+        
+        # exponential Tab 
+        tabPanel('Cool',       
+                         plotOutput("plot_Cool")
+        )
+        
+    )
+
+
+# Define server logic required to draw pdf
+server <- function(input, output) {
+    
+    rvals <- reactiveValues()
+    
+    observe({
+        xy_list <- xy_dens_gen(tab = input$cur_tab, input = input)
+        rvals$x <- xy_list$x
+        rvals$y <- xy_list$y
+    })
+    
+    
+    
+    #Render print inside renderPLot
+    output$plot_Normal <- renderPlot({
+        #NB does not invoke the plot helper
+        plot(rvals$x, rvals$y)
+    })
+    
+    output$plot_Special <- renderPlot({
+        plot_fun_helper(x = rvals$x, y = rvals$y, tab = input$cur_tab)
+    })
+    
+    output$plot_Cool <- renderPlot({
+        plot_fun_helper(x = rvals$x, y = rvals$y, tab = input$cur_tab)
+    })
+    
+    
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+
