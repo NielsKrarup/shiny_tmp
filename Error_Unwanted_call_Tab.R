@@ -105,8 +105,6 @@ server <- function(input, output) {
         plot_fun_helper(x = rvals$x, y = rvals$y, tab = input$cur_tab)
     })
     
-    print("-------------------")
-    
 }
 
 # Run the application 
