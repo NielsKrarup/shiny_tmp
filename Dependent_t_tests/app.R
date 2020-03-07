@@ -6,7 +6,7 @@
 #
 #    http://shiny.rstudio.com/
 #
-#Last test. This is 
+#Last test. This is a comment only on the local level
 
 library(shiny)
 
