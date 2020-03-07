@@ -21,15 +21,17 @@ library(shiny)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Dependence of tests using subsets of same data"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
+            helpText("A t-test is made on data x1,...,x_total"),
+            helpText("Another t-test is made on subset of same data: x1,...,x_sub"),
             sliderInput("effect",
                         "Common Effect",
-                        min = -10.1,
-                        max = 10.1,
+                        min = -2.1,
+                        max = 2.1,
                         value = 0),
             sliderInput("n_total",
                         "Total size of sample",
