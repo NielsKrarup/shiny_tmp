@@ -102,8 +102,8 @@ server <- function(input, output) {
         rv$res_mat <- res_mat
         # # draw the histogram with the specified number of bins
         plot(res_mat[,1], res_mat[,2], xlab = "Total Group Test Pval", ylab = "Sub Group Test P val")
-        abline(h = 0.05, lty = 2)
-        abline(v = 0.05, lty = 2)
+        abline(h = 0.05, lty = 2, col = 2)
+        abline(v = 0.05, lty = 2, col = 2)
 
     })
     
