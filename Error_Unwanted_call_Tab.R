@@ -16,7 +16,12 @@ plot_fun_helper <- function(x, y, tab){
              
                plot(x,y, type = 'b', pch = y, col = y ) 
            },
-           stop("Error. Only defined for Tab: Special and Cool"))
+           "Normal" = {
+             print("Normal case in plot_fun_helper")
+             
+             plot(x, y)
+             
+           })
     
 }
 
@@ -77,32 +82,37 @@ server <- function(input, output) {
         xy_list <- xy_dens_gen(tab = input$cur_tab)
         rvals$x <- xy_list$x
         rvals$y <- xy_list$y
+        
+          rvals$plot <- plot_fun_helper(x = rvals$x, y = rvals$y, tab = input$cur_tab)
+    
     })
     
     
     
     #Render print inside renderPLot
     output$plot_Normal <- renderPlot({
-      if(input$cur_tab != "Normal") return(NULL)
+      #if(input$cur_tab != "Normal") return(NULL)
       
         print("render PLot normal")
         #NB does not invoke the plot_fun_helper
-        plot(rvals$x, rvals$y)
+        rvals$plot
+      
     })
     
     output$plot_Special <- renderPlot({
-      if(input$cur_tab != "Special") return(NULL)
+      #if(input$cur_tab != "Special") return(NULL)
       
       print("render PLot Special")
       
-        plot_fun_helper(x = rvals$x, y = rvals$y, tab = input$cur_tab)
-    })
+      rvals$plot
+      
+      })
     
     output$plot_Cool <- renderPlot({
-      if(input$cur_tab != "Cool") return(NULL)
+      #if(input$cur_tab != "Cool") return(NULL)
       print("render PLot Cool")
       
-        plot_fun_helper(x = rvals$x, y = rvals$y, tab = input$cur_tab)
+      rvals$plot
     })
     
 }

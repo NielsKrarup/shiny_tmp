@@ -1,10 +1,11 @@
 #test
 library(shiny)
 library(highcharter)
+library(ggplot2)
 
 plot_fun_helper <- function(x,y){
-  df = data.frame(x=round(x[sample(seq_along(x))],3),y=round(y,3))
-  highcharter::hchart(df, type = "area", hcaes(x=x,y=y), color = "#009FDA", name = "Density")
+  df = data.frame(x=round(x,3),y=round(y,3))
+  ggplot(df , aes(x=x, y=y)) + geom_line()
 }
 
 xy_dens_gen <- function(tab, input){
@@ -36,8 +37,7 @@ xy_dens_gen <- function(tab, input){
               y = y))
 }
 
-ui <- 
-  fluidPage(
+ui <- fluidPage(
     titlePanel("reprex"),
     sidebarLayout(
       sidebarPanel(
@@ -45,7 +45,9 @@ ui <-
         uiOutput("sidebar")
       ),
       #main panel 
-      uiOutput("plot")
+      mainPanel(
+      plotOutput("plot")
+      )
     )
   )
 
@@ -77,12 +79,10 @@ server <- function(input, output) {
     }
   })
   
-  output$plot <- renderUI({
-    if(is.null(rvals$x)) return(NULL)
-    mainPanel(
-      h1(rvals$title),
-      plot_fun_helper(x = rvals$x, y = rvals$y)
-    )
+  output$plot <- renderPlot({
+   if(is.null(rvals$x)) return(NULL)
+    p <-  plot_fun_helper(x = rvals$x, y = rvals$y)
+    p
   })
 }
 
