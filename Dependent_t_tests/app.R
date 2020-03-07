@@ -25,8 +25,8 @@ ui <- fluidPage(
         sidebarPanel(
             sliderInput("effect",
                         "Common Effect",
-                        min = -1.1,
-                        max = 1.1,
+                        min = -10.1,
+                        max = 10.1,
                         value = 0),
             sliderInput("n_total",
                         "Total size of sample",
