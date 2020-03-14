@@ -36,7 +36,7 @@ ui <- fluidPage(
             sliderInput("n_total",
                         "Total size of sample",
                         min = 1,
-                        max = 50,
+                        max = 500,
                         value = 30),
             uiOutput("n_sub_input"),
             numericInput("n_sim",
@@ -48,9 +48,9 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-            verbatimTextOutput("sample"),
-            plotOutput("p_vals"),
-            verbatimTextOutput("out")
+                  plotOutput("p_vals_running"),
+                  plotOutput("p_vals"),
+                  verbatimTextOutput("out")
         )
     )
 )
@@ -120,6 +120,25 @@ server <- function(input, output) {
              Sub_grp_test = table(rv$res_mat[,2]<0.05)/n_sim,
              table(rv$res_mat[,1]<0.05 , rv$res_mat[,2] < 0.05, dnn = c("Total Test Rej", "Sub Test Rej"))/n_sim)
         
+    })
+    
+    output$p_vals_running <- renderPlot({
+      req(input$n_sub_grp)
+      #first row of data
+      data <- sim_data()[1,]
+      # generate bins based on input$bins from ui.R
+      p_vals_running <- vector("double", input$n_sub_grp-3)
+      
+      for(i in seq_len(input$n_sub_grp-3)){
+        x_sub      <- data[1:(i+3)]
+        p_val_sub   <- t.test(x_sub)$p.value
+        
+        p_vals_running[i] <- p_val_sub
+      }
+      # # draw the histogram with the specified number of bins
+      plot(4:input$n_sub_grp, p_vals_running, type = "b", xlab = "Number of obs. used", ylab = "Test P value", ylim = c(0,1))
+      abline(h = 0.05, lty = 2)
+      
     })
 }
 
