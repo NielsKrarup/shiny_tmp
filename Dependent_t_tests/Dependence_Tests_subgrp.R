@@ -48,7 +48,9 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
+          helpText("First sample, running p-vals"),
                   plotOutput("p_vals_running"),
+          helpText("N_Sim simulated p-vals. Pvals Based on total group vs Subgroup"),
                   plotOutput("p_vals"),
                   verbatimTextOutput("out")
         )
