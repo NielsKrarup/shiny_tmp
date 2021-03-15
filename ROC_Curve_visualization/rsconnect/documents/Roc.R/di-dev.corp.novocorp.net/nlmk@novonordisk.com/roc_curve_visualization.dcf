@@ -1,0 +1,12 @@
+name: roc_curve_visualization
+title: ROC_Curve_visualization
+username: nlmk@novonordisk.com
+account: nlmk@novonordisk.com
+server: di-dev.corp.novocorp.net
+hostUrl: https://di-dev.corp.novocorp.net/__api__
+appId: 81
+bundleId: 708
+url: https://di-dev.corp.novocorp.net/content/81/
+when: 1615809661.99589
+asMultiple: FALSE
+asStatic: FALSE
