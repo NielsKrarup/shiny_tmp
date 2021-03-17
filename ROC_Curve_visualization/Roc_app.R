@@ -66,7 +66,9 @@ Assmuing normal distribution.")),
                         mainPanel(
                           helpText("First sample, running p-vals"),
                           plotOutput("plot_groups"),
-                          verbatimTextOutput("sample"),
+                          uiOutput("threshold_slider"),
+                          plotOutput("plot_roc"),
+                          #verbatimTextOutput("sample"),
                           helpText("N_Sim simulated p-vals. Pvals Based on total group vs Subgroup"),
                           #plotOutput("plot_groups"),
                           verbatimTextOutput("out")
@@ -93,6 +95,30 @@ server <- function(input, output) {
                 step = 1)
     
   })
+  
+  output$n_sub_input <- renderUI({
+    req(input$n_total)
+    
+    sliderInput("n_sub_grp",
+                "Sub Group Size",
+                min = 1, 
+                max = input$n_total, 
+                value = input$n_total/2, 
+                step = 1)
+    
+  })
+  
+  output$threshold_slider <- renderUI({
+    req(rv$roc_obj)
+    
+    sliderInput("n_sub_grp",
+                "Sub Group Size",
+                min = 1, 
+                max = input$n_total, 
+                value = input$n_total/2, 
+                step = 1)
+    
+  })
 
 # Reactive values ---------------------------------------------------------
 
@@ -101,32 +127,38 @@ server <- function(input, output) {
 
   rv <- reactiveValues()
   
-  sim_data <- eventReactive(input$action_sim,{
+  sim_data <- observeEvent(input$action_sim,{
     #First cases
     x <- rnorm(n = input$n_sim_case + input$n_sim_ctrl, 
                mean = c(rep(input$m_case, input$n_sim_case), rep(input$m_ctrl, input$n_sim_ctrl)),
                sd = c(rep(input$sd_case, input$n_sim_case), rep(input$sd_ctrl, input$n_sim_ctrl)))
     
-    grp <- rep(c("case","ctrl"), c(input$n_sim_case,input$n_sim_ctrl))
+    respons <- rep(c("case","ctrl"), c(input$n_sim_case,input$n_sim_ctrl))
     
     
     
-    tibble(x = x,
-           grp = grp)
+    rv$sim_data <- tibble(x = x,
+                          respons = respons)
+    
+    #Calculate pROC
+    
+    rv$roc_obj <- pROC::roc(respons ~ x, data = rv$sim_data)
 
   })
   
   
   
-  output$sample <- renderPrint({
-    sim_data()
+  output$plot_roc <- renderPlot({
+    req(input$action_sim)
+    
+    plot(rv$roc_obj)
   })
   
   
   
   output$plot_groups <- renderPlot({
     req(input$action_sim)
-    data <- sim_data()
+    data <- rv$sim_data
     #create limits for plots of groups
     min_lim <- isolate({
       min(min(data$x),qnorm(p = 0.001, mean = c(input$m_case, input$m_ctrl), sd = c(input$sd_case, input$sd_ctrl)))
@@ -136,47 +168,17 @@ server <- function(input, output) {
       })
     
     
-    ggplot(data = data, aes(x = x, col = grp, fill = grp)) + 
+    ggplot(data = data, aes(x = x, col = respons, fill = respons)) + 
       geom_density(alpha = 0.5, outline.type = "upper", size = 0.25) + 
-      geom_rug(data = subset(data, grp == "case"), sides = "t") + 
-      geom_rug(data = subset(data, grp == "ctrl"), sides = "b") + 
+      geom_rug(data = subset(data, respons == "case"), sides = "t") + 
+      geom_rug(data = subset(data, respons == "ctrl"), sides = "b") + 
       #geom_rug() + 
       xlim(min_lim, max_lim)
     
   })
   
-  qnorm(p = 0.1, mean = 1:2, sd = c(1/100, 100))
   
-  output$out <- renderPrint({
-    #since the result matrix is dependent on renderUI and other calculations, use REQ
-    req(rv$res_mat)
-    n_sim <- input$n_sim
-    
-    list(correlation  = cor(rv$res_mat[,1], rv$res_mat[,2]),
-         Total_test   = table(rv$res_mat[,1]<0.05)/n_sim,
-         Sub_grp_test = table(rv$res_mat[,2]<0.05)/n_sim,
-         table(rv$res_mat[,1]<0.05 , rv$res_mat[,2] < 0.05, dnn = c("Total Test Rej", "Sub Test Rej"))/n_sim)
-    
-  })
-  
-  output$p_vals_running <- renderPlot({
-    req(input$n_sub_grp)
-    #first row of data
-    data <- sim_data()[1,]
-    # generate bins based on input$bins from ui.R
-    p_vals_running <- vector("double", input$n_sub_grp-3)
-    
-    for(i in seq_len(input$n_sub_grp-3)){
-      x_sub      <- data[1:(i+3)]
-      p_val_sub   <- t.test(x_sub)$p.value
-      
-      p_vals_running[i] <- p_val_sub
-    }
-    # # draw the histogram with the specified number of bins
-    plot(4:input$n_sub_grp, p_vals_running, type = "b", xlab = "Number of obs. used", ylab = "Test P value", ylim = c(0,1))
-    abline(h = 0.05, lty = 2)
-    
-  })
+
 }
 
 # Run the application 
