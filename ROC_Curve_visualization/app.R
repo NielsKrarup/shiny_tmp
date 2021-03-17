@@ -141,8 +141,8 @@ server <- function(input, output) {
                           respons = respons)
     
     #Calculate pROC
-    
-    rv$roc_obj <- pROC::roc(respons ~ x, data = rv$sim_data)
+    print(levels(as.factor(rv$sim_data$respons)))
+    rv$roc_obj <- pROC::roc(respons ~ x, data = rv$sim_data, levels = c("ctrl", "case"))
 
   })
   
@@ -157,7 +157,7 @@ server <- function(input, output) {
   
   
   output$plot_groups <- renderPlot({
-    req(input$action_sim)
+    req(input$action_sim, rv$sim_data)
     data <- rv$sim_data
     #create limits for plots of groups
     min_lim <- isolate({
