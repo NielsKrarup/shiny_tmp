@@ -31,6 +31,13 @@ df <- as.data.frame(cbind(x, y1, y2, y3))
 
 median(x[y1 == 0]);median(x[y1 == 1])
 r1 <- roc(response  = y1, predictor = x, smooth = FALSE, data = df)
+sort(df$x)
+sort(r1$predictor)
+sort(r1$original.predictor)
+sort(r1$thresholds)
+
+str(r1)
+
 
 median(x[y2 == 0]);median(x[y2 == 1])
 r2 <- roc(response  = y2, predictor = x, smooth = FALSE, data = df)
