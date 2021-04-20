@@ -118,7 +118,9 @@ roc_fun <- function(mean1 = 0, mean2 = 1, sd1 = 1, sd2 = 1, n1 = 100, n2 = 100){
   data <- data.frame(x = c(x1,x2), 
                      y = c(rep(0, n1), rep(1, n2)))
   #roc 
-  roc <- pROC::roc(formula = y ~ x, data = data)
+  roc <<- pROC::roc(formula = y ~ x, data = data)
+  plot(roc)
+  
   youden <- coords(
     roc = roc,
     x = 'best',
