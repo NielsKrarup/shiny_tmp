@@ -75,16 +75,20 @@ Assmuing normal distribution.")),
                                        min = 1,
                                        value = 6),
                           checkboxInput(inputId = "youden_bt",label = "Show Youden Cutpoint"),
-                          checkboxInput(inputId = "ctl_bt", label = "Show Closest Topleft cutpoint")
+                          checkboxInput(inputId = "ctl_bt", label = "Show Closest Topleft cutpoint"),
+                          checkboxInput(inputId = "burst_bt", label = "add data points by clicking"),
+                          uiOutput("burst_numericInput")
+                          
                         ),
                         
                         # Show a plot of the generated distribution
                         mainPanel(
-                          fluidRow(uiOutput("info_header"),
+                          fluidRow(shiny::verbatimTextOutput("print_out"),
+                                     uiOutput("info_header"),
                                    br(),
                                    uiOutput("roc_stats")),
                           column(width = 6,
-                              plotOutput("plot_groups2"),
+                              plotOutput("plot_groups2", click = clickOpts(id = "plot_click"), brush = "plot_brush"),
                               uiOutput("threshold_slider")
                           ),
                           column(width = 6, 
@@ -104,16 +108,46 @@ Assmuing normal distribution.")),
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
+  #reactive
+  rv <- reactiveValues()
+  
+output$print_out <- renderPrint({
+  req(input$plot_brush, input$plot_point)
+input$plot_brush
+})
+
+# Toggle points that are clicked
+observeEvent(input$plot_click, {
+  req(input$burst_bt, rv$build_plot)
+  #cases added
+  if(input$plot_click$y > max(rv$build_plot$y)*0.8){
+    rv$sim_data <- rbind(rv$sim_data, 
+                         tibble(x = rnorm(n = input$burst_n, 
+                                          mean = input$plot_click$x, 
+                                          sd = ifelse(input$burst_n == 1, 0, input$sd_case/10)), 
+                                response = "case"))
+  }else 
+  #control added
+    if(input$plot_click$y < max(rv$build_plot$y)*0.2){
+      rv$sim_data <- rbind(rv$sim_data, 
+                           tibble(x = rnorm(n = input$burst_n, 
+                                            mean = input$plot_click$x, 
+                                            sd = ifelse(input$burst_n == 1, 0, input$sd_ctrl/10)),
+                                  response = "control"))
+  }
+
+})
 
   # Dynamic UI --------------------------------------------------------------
 
-  
+
+# render slider below plot ------------------------------------------------
   output$threshold_slider <- renderUI({
     req(rv$sim_data)
     #count no of rows in data
     rv$n <- nrow(rv$sim_data)
   
-    #set slider as percent of data x-points
+    #set slider as No of data x-points
     sliderInput("thr_slider",
                 "Predictor Cut-Point, No. of sorted data points",
                 min = 0, 
@@ -123,6 +157,23 @@ server <- function(input, output) {
                 step = 1, 
                 animate = T)
   })
+
+
+output$burst_numericInput <- renderUI({
+  req(input$burst_bt)
+  
+  #set slider as No of data x-points
+  sliderInput("burst_n",
+              "Number of points to add when clicking on plot",
+              min = 1, 
+              max =  100, 
+              #set vallue as half of points. if even = 50% otherwise nearest even cut percentage
+              value = 10, 
+              step = 1)
+})
+# a -----------------------------------------------------------------------
+
+
   
   #Roc help text
   output$help_text_roc <- renderUI({
@@ -157,28 +208,27 @@ server <- function(input, output) {
     req(rv$sens, rv$spec)
 
    tagList(
-     HTML("observations having predictor values", ifelse( rv$roc_obj$direction == "<", "<b>lower</b>", "<b>above</b>"), 
-          "the chosen threshols value are classified as <font color=\"#0000FF\"><b>Controls</b></font>, resulting in",
-          "<b>", ifelse( rv$roc_obj$direction == "<", rv$n_below, rv$n_above), "</b>",
-          "clasified as controls, out of which <font color=\"#0000FF\">", rv$ntpcnt, "</font> are actual controls, given a <b> negative predictive value </b> of",
-          paste0(rv$ntpcnt, "/",  ifelse( rv$roc_obj$direction == "<", rv$n_below, rv$n_above), "=", round( rv$npv,2) ),
-          "and a <b> specificity </b> of",  paste0(rv$ntpcnt, "/", rv$n_control ),"=", "<font color=\"#FFA500\"><b>" ,round(rv$spec,2), "</b></font>"),
- hr(),
  HTML("observations having predictor values", ifelse( rv$roc_obj$direction == "<", "<b>above</b>", "<b>lower</b>"), 
       "the chosen threshols value are classified as <font color=\"#FF0000\"><b>Cases</b></font>, resulting in",
       "<b>", ifelse( rv$roc_obj$direction == "<",  rv$n_above, rv$n_below), "</b>",
       "clasified as Cases, out of which <font color=\"#FF0000\">", rv$ntpcs, "</font> are actual cases, given a <b> positive predictive value </b> of",
       paste0(rv$ntpcs, "/",  ifelse( rv$roc_obj$direction == "<", rv$n_above, rv$n_below), "=", round( rv$ppv,2) ),
-      "and a <b> sensitivity </b> of",  paste0(rv$ntpcs, "/", rv$n_cases ),"=", "<font color=\"#800080\"><b>", round(rv$sens,2), "</b></font>")
+      "and a <b> sensitivity </b> of",  paste0(rv$ntpcs, "/", rv$n_cases ),"=", "<font color=\"#800080\"><b>", round(rv$sens,2), "</b></font>"),
+   hr(),
+   HTML("observations having predictor values", ifelse( rv$roc_obj$direction == "<", "<b>lower</b>", "<b>above</b>"), 
+        "the chosen threshols value are classified as <font color=\"#0000FF\"><b>Controls</b></font>, resulting in",
+        "<b>", ifelse( rv$roc_obj$direction == "<", rv$n_below, rv$n_above), "</b>",
+        "clasified as controls, out of which <font color=\"#0000FF\">", rv$ntpcnt, "</font> are actual controls, given a <b> negative predictive value </b> of",
+        paste0(rv$ntpcnt, "/",  ifelse( rv$roc_obj$direction == "<", rv$n_below, rv$n_above), "=", round( rv$npv,2) ),
+        "and a <b> specificity </b> of",  paste0(rv$ntpcnt, "/", rv$n_control ),"=", "<font color=\"#FFA500\"><b>" ,round(rv$spec,2), "</b></font>")
    )
   })
   
 
 # Reactive values ---------------------------------------------------------
 
-  rv <- reactiveValues()
   
-
+#simulate data only when clicked
   observeEvent(input$action_sim,{
     # Simulate data ----
     x <- rnorm(n = input$n_sim_case + input$n_sim_ctrl, 
@@ -191,10 +241,12 @@ server <- function(input, output) {
     
     rv$sim_data <- tibble(x = x,
                           response = response)
-    
+    })
+
+  observe({
+    req(rv$sim_data)
     #Calculate pROC object ----
-    print(levels(as.factor(rv$sim_data$response)))
-    rv$roc_obj <- pROC::roc(response ~ x, data = rv$sim_data, levels = c("control", "case"))
+    rv$roc_obj <- pROC::roc(response ~ x, data = rv$sim_data, levels = c("control", "case"), quiet = T)
     
     #save youden and closests topleft
     #youden
@@ -220,10 +272,11 @@ server <- function(input, output) {
     req(input$thr_slider, rv$sim_data, rv$roc_obj)
     
     
-    #steps; x value to get % of data
+    #No of data points 0-n
     step <- input$thr_slider
     rng <- range(rv$sim_data$x)
-    #lowest/highest step is +-0.05 of spread/range of predictor (x) values, remaining is the middle point between two consecutive points.
+    #lowest/highest step is +-0.05 of spread/range of predictor (x) values, 
+    #remaining is the middle point between two consecutive points.
     x_grid <- c( rng[1]-0.05*diff(rng), 
             (sort(rv$sim_data$x)[1:(rv$n-1)] + sort(rv$sim_data$x)[2:rv$n])/2, 
             rng[2]+0.05*diff(rng)) 
@@ -347,7 +400,7 @@ server <- function(input, output) {
       geom_rug(data = subset(data, response == "control" & classification == "control"), sides = "b", size = 1.1, colour = Colors[names(Colors)=="control"] ) 
     
     d <- ggplot_build(p)$data[[1]]
-
+    rv$build_plot <- d
     # color dependent on direction of roc-object: recall control >< Case
     
     if(rv$roc_obj$direction == "<"){
