@@ -67,7 +67,7 @@ Assmuing normal distribution.")),
                                       max = 10,
                                       value = 5),
                           numericInput("n_sim_case",
-                                       "Number of observations in Control group",
+                                       "Number of observations in Case group",
                                        min = 1,
                                        value = 5),
                           numericInput("n_sim_ctrl",
@@ -83,10 +83,11 @@ Assmuing normal distribution.")),
                         
                         # Show a plot of the generated distribution
                         mainPanel(
-                          fluidRow(shiny::verbatimTextOutput("print_out"),
-                                     uiOutput("info_header"),
-                                   br(),
-                                   uiOutput("roc_stats")),
+                          fluidRow(
+                                   uiOutput("info_header"),
+                                   uiOutput("roc_stats"),
+                                   hr()
+                                   ),
                           column(width = 6,
                               plotOutput("plot_groups2", click = clickOpts(id = "plot_click"), brush = "plot_brush"),
                               uiOutput("threshold_slider")
@@ -111,10 +112,6 @@ server <- function(input, output) {
   #reactive
   rv <- reactiveValues()
   
-output$print_out <- renderPrint({
-  req(input$plot_brush, input$plot_point)
-input$plot_brush
-})
 
 # Toggle points that are clicked
 observeEvent(input$plot_click, {
@@ -168,7 +165,7 @@ output$burst_numericInput <- renderUI({
               min = 1, 
               max =  100, 
               #set vallue as half of points. if even = 50% otherwise nearest even cut percentage
-              value = 10, 
+              value = 1, 
               step = 1)
 })
 # a -----------------------------------------------------------------------
