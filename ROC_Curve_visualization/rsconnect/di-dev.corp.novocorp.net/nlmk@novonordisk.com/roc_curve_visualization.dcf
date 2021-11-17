@@ -5,9 +5,10 @@ account: nlmk@novonordisk.com
 server: di-dev.corp.novocorp.net
 hostUrl: https://di-dev.corp.novocorp.net/__api__
 appId: 81
-bundleId: 1172
+bundleId: 1400
 url: https://di-dev.corp.novocorp.net/ROC/
-when: 1631292234.36871
+when: 1637170916.20967
+lastSyncTime: 1637170916.20967
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: ROC_intuition.R|sandbox.R
+ignoredFiles: pROC.R|ROC_intuition.R|sandbox.R
