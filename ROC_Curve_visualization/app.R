@@ -108,7 +108,7 @@ Assmuing normal distribution.")),
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  set.seed(123)
+  set.seed(202)
   #reactive
   rv <- reactiveValues()
   
