@@ -102,7 +102,7 @@ Assmuing normal distribution.")),
                       )
              ),
              tabPanel(title = "Theory", "Coming Soon"),
-             tabPanel(title = "About","Made by Niels Moctezuma Krarup, please report bugs to krarup.niels@gmail.com")
+             tabPanel(title = "About","Made by Niels Moctezuma Krarup, please report bugs to nlmk@novonordisk.com")
   )
 )
 
